@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>瑙嗛鎼滅储</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Microsoft YaHei', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      color: white;
+    }
+    
+    header h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .search-box {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 40px;
+    }
+    
+    .search-box input {
+      width: 60%;
+      padding: 15px 20px;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 50px 0 0 50px;
+      outline: none;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .search-box button {
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      border-radius: 0 50px 50px 0;
+      cursor: pointer;
+      transition: background 0.3s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .search-box button:hover {
+      background: #ff5252;
+    }
+    
+    .results {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    
+    .video-card {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+      cursor: pointer;
+    }
+    
+    .video-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 12px rgba(0,0,0,0.2);
+    }
+    
+    .video-thumbnail {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+    
+    .video-info {
+      padding: 15px;
+    }
+    
+    .video-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    
+    .video-meta {
+      display: flex;
+      justify-content: space-between;
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    .loading {
+      text-align: center;
+      color: white;
+      font-size: 1.2rem;
+      margin-top: 50px;
+    }
+    
+    .no-results {
+      text-align: center;
+      color: white;
+      font-size: 1.2rem;
+      margin-top: 50px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>馃帴 瑙嗛鎼滅储</h1>
+      <p>鎼滅储浣犲枩娆㈢殑瑙嗛鍐呭</p>
+    </header>
+    
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="杈撳叆鍏抽敭璇嶆悳绱㈣棰?.." />
+      <button onclick="searchVideos()">鎼滅储</button>
+    </div>
+    
+    <div id="results" class="results"></div>
+    <div id="loading" class="loading" style="display: none;">鎼滅储涓?..</div>
+    <div id="noResults" class="no-results" style="display: none;">娌℃湁鎵惧埌鐩稿叧瑙嗛</div>
+  </div>
+  
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const resultsDiv = document.getElementById('results');
+    const loadingDiv = document.getElementById('loading');
+    const noResultsDiv = document.getElementById('noResults');
+    
+    // 鍥炶溅鎼滅储
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        searchVideos();
+      }
+    });
+    
+    async function searchVideos() {
+      const query = searchInput.value.trim();
+      
+      if (!query) {
+        alert('璇疯緭鍏ユ悳绱㈠叧閿瘝');
+        return;
+      }
+      
+      // 鏄剧ず鍔犺浇
+      resultsDiv.innerHTML = '';
+      loadingDiv.style.display = 'block';
+      noResultsDiv.style.display = 'none';
+      
+      try {
+        // TODO: 鎺ュ叆鐪熷疄瑙嗛鎼滅储 API
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        loadingDiv.style.display = 'none';
+        
+        if (data.success && data.results.length > 0) {
+          displayResults(data.results);
+        } else {
+          noResultsDiv.style.display = 'block';
+        }
+        
+      } catch (error) {
+        loadingDiv.style.display = 'none';
+        console.error('鎼滅储閿欒:', error);
+        alert('鎼滅储澶辫触锛岃閲嶈瘯');
+      }
+    }
+    
+    function displayResults(videos) {
+      resultsDiv.innerHTML = '';
+      
+      videos.forEach(video => {
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        card.innerHTML = `
+          <img class="video-thumbnail" src="${video.thumbnail}" alt="${video.title}" />
+          <div class="video-info">
+            <div class="video-title">${video.title}</div>
+            <div class="video-meta">
+              <span>${video.channel}</span>
+              <span>${video.views} 鎾斁</span>
+            </div>
+            <div class="video-meta" style="margin-top: 5px;">
+              <span>鏃堕暱: ${video.duration}</span>
+            </div>
+          </div>
+        `;
+        
+        card.onclick = () => {
+          alert(`鎾斁瑙嗛: ${video.title}`);
+          // TODO: 鎺ュ叆鐪熷疄瑙嗛鎾斁
+        };
+        
+        resultsDiv.appendChild(card);
+      });
+    }
+    
+    // 椤甸潰鍔犺浇鏃舵樉绀虹儹闂ㄦ悳绱?    window.onload = () => {
+      searchInput.value = '鐑棬瑙嗛';
+      searchVideos();
+    };
+  </script>
+</body>
+</html>
